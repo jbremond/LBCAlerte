@@ -118,6 +118,8 @@ class Main
 
         $baseurl = $this->_config->get("general", "baseurl", "");
 
+        $nb_retry = (int)$this->_config->get("mailer", "nb_retry", 0);
+
         foreach ($users AS $user) {
             if ($storageType == "db") {
                 $storage = new \App\Storage\Db\Alert($this->_userStorage->getDbConnection(), $user);
@@ -290,7 +292,7 @@ class Main
                             $this->_mailer->Subject = $subject;
                             $this->_mailer->Body = $message;
                             try {
-                                $this->_mailer->send();
+                                $this->_mailer->send($nb_retry);
                             } catch (phpmailerException $e) {
                                 $this->_logger->warn($e->getMessage());
                             }
@@ -319,7 +321,7 @@ class Main
                                 $this->_mailer->Subject = $subject;
                                 $this->_mailer->Body = $message;
                                 try {
-                                    $this->_mailer->send();
+                                    $this->_mailer->send($nb_retry);
                                 } catch (phpmailerException $e) {
                                     $this->_logger->warn($e->getMessage());
                                 }

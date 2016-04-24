@@ -919,21 +919,27 @@ class PHPMailer
      * @throws phpmailerException
      * @return bool
      */
-    public function send()
+    public function send($retry)
     {
-        try {
-            if (!$this->preSend()) {
-                return false;
+        $sucess=False;
+        $nb_retry=0;
+        while(!$sucess && $nb_retry<=$retry){
+            try {
+                if (!$this->preSend()) {
+                    return false;
+                }
+                $sucess = $this->postSend();
+            } catch (phpmailerException $e) {
+                $this->mailHeader = '';
+                $this->setError($e->getMessage());
+                if ($this->exceptions && $nb_retry>=$retry) {
+                    throw $e;
+                }
+                $sucess = False;
             }
-            return $this->postSend();
-        } catch (phpmailerException $e) {
-            $this->mailHeader = '';
-            $this->setError($e->getMessage());
-            if ($this->exceptions) {
-                throw $e;
-            }
-            return false;
+            $nb_retry++;
         }
+        return $sucess;
     }
 
     /**
