@@ -458,7 +458,16 @@ class Main
     protected function _lock()
     {
         if (is_file($this->_lockFile)) {
-            throw new Exception("Un processus est en cours d'exécution.");
+            $file = new SplFileObject($this->_lockFile);
+            //seek to line 2, which correspond to the pid
+            $file->seek(1);
+            $pid = (int)$file->current();
+            $rpid = posix_getpgid($pid);
+            if(!empty($rpid)){
+                throw new Exception("Un processus est en cours d'exécution.");
+            } else {
+                unlink($this->_lockFile);    
+            }
         }
         file_put_contents($this->_lockFile, time()."\n".getmypid());
         return $this;
